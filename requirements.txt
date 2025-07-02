@@ -1,1 +1,4 @@
-
+# requirements.txt
+Flask
+pymongo[srv]
+python-dotenv
