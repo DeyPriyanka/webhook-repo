@@ -1,0 +1,68 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Activity Feed</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f6f8fa; color: #24292e; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background-color: white; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; }
+        h1 { text-align: center; border-bottom: 1px solid #e1e4e8; padding-bottom: 10px; }
+        #events-list { list-style: none; padding: 0; }
+        #events-list li { padding: 12px; border-bottom: 1px solid #e1e4e8; }
+        #events-list li:last-child { border-bottom: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Latest Repository Events</h1>
+        <div id="loading" class="spinner"></div>
+        <ul id="events-list"></ul>
+    </div>
+
+    <script>
+        const eventsList = document.getElementById('events-list');
+        const loadingIndicator = document.getElementById('loading');
+
+        async function fetchEvents() {
+            try {
+                const response = await fetch('/events');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const events = await response.json();
+                
+                // Hide spinner once data is fetched
+                loadingIndicator.style.display = 'none';
+                
+                // Clear the current list
+                eventsList.innerHTML = ''; 
+
+                if (events.length === 0) {
+                    eventsList.innerHTML = '<li>No recent events found. Push a change to the action-repo to see updates!</li>';
+                } else {
+                    // Populate the list with new events
+                    events.forEach(eventText => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = eventText;
+                        eventsList.appendChild(listItem);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to fetch events:', error);
+                eventsList.innerHTML = '<li>Error loading events. Check the console.</li>';
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Fetch events immediately on page load
+        fetchEvents();
+
+        // Then, poll for new events every 15 seconds
+        setInterval(fetchEvents, 15000);
+    </script>
+</body>
+</html>
